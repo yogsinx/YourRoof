@@ -361,7 +361,8 @@ async def forgot_password(data: ForgotPassword):
         "used": False
     })
     
-    reset_link = f"http://localhost:3000/reset-password?token={token}"
+    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    reset_link = f"{frontend_url}/reset-password?token={token}"
     print(f"Password reset link: {reset_link}")
     
     return {"message": "If email exists, reset link has been sent"}
