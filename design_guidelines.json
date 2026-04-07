@@ -1,0 +1,109 @@
+{
+  "theme": "light",
+  "archetype": "4_swiss_and_high_contrast",
+  "typography": {
+    "fonts": {
+      "headings": "Cabinet Grotesk",
+      "body": "Manrope",
+      "mono": "JetBrains Mono"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl font-semibold",
+      "body": "text-base leading-relaxed text-foreground/80",
+      "small": "text-sm text-foreground/60",
+      "overline": "text-xs tracking-[0.2em] uppercase font-bold text-foreground/50"
+    }
+  },
+  "colors": {
+    "background": "#FFFFFF",
+    "foreground": "#0A0A0A",
+    "card": "#F9F9FB",
+    "card_foreground": "#0A0A0A",
+    "popover": "#FFFFFF",
+    "popover_foreground": "#0A0A0A",
+    "primary": "#0A0A0A",
+    "primary_foreground": "#FFFFFF",
+    "secondary": "#F3F4F6",
+    "secondary_foreground": "#0A0A0A",
+    "muted": "#F3F4F6",
+    "muted_foreground": "#737373",
+    "accent": "#0055FF",
+    "accent_foreground": "#FFFFFF",
+    "destructive": "#DC2626",
+    "destructive_foreground": "#FFFFFF",
+    "border": "#E5E5E5",
+    "input": "#E5E5E5",
+    "ring": "#0A0A0A"
+  },
+  "spacing_and_layout": {
+    "general": "Generous spacing philosophy. Use 2-3x more spacing than typical designs. Use p-8 or p-12 for containers.",
+    "grid_marketing": "Mode A: The Tetris Grid. Asymmetry, Visual Tension, Art. Wide gaps (gap-8 to gap-12).",
+    "grid_dashboard": "Mode B: The Control Room Grid. Density, Data Correlation, Scanability. Tight gaps (gap-4 or gap-6). Use h-full.",
+    "alignment": "Mobile-First. Left-align dense content. Never center by default."
+  },
+  "surfaces": {
+    "marketing": "Grid Borders: Expose the skeleton. border-r border-b border-border/40. No soft shadows. Sharp edges.",
+    "dashboard_cards": "Flat background, 1px subtle border, no shadow. Hover: slight lift and subtle shadow.",
+    "headers": "Crystal Glass: bg-white/70, backdrop-blur-xl, 1px delicate inner stroke (border-black/5)."
+  },
+  "components": {
+    "buttons": "Sharp corners or very subtle radius (rounded-sm). High contrast hover states.",
+    "forms": "Shadcn components heavily customized. Never use native inputs.",
+    "tables": "Dense, functional, 1px borders, hover states on rows for scanability."
+  },
+  "motion": {
+    "general": "Minimalist micro-interactions for feedback. Hover state lift on cards (-translate-y-1).",
+    "transitions": "Use specific properties (transition: transform 0.2s ease, opacity 0.2s ease).",
+    "accessibility": "Respect prefers-reduced-motion."
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "style": "Use regular or duotone weights for dashboards and detailed UI."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_background",
+        "url": "https://static.prod-images.emergentagent.com/jobs/ed8df817-38a5-4539-91b3-ca88af9532db/images/872d11e66c6182b14c14d935abd882883ee80b2efea1c4c97e14b7c4c4378e9f.png",
+        "description": "Wide-angle photograph of a modern glass office building at golden hour, warm sunlight reflecting off windows, deep navy sky in background, shot from below looking up, cinematic depth of field, professional corporate feel"
+      },
+      {
+        "category": "abstract_architecture",
+        "url": "https://static.prod-images.emergentagent.com/jobs/ed8df817-38a5-4539-91b3-ca88af9532db/images/c245e3817612b7ecb85e2346865ba66433bf67c445d5ab11e974a273cd3c1633.png",
+        "description": "Minimalist abstract architectural background, soft light reflecting on clean white and light grey geometric planes, smooth transitions, subtle depth, high-end real estate concept"
+      },
+      {
+        "category": "network_pattern",
+        "url": "https://static.prod-images.emergentagent.com/jobs/ed8df817-38a5-4539-91b3-ca88af9532db/images/60c2dfbcab72a726fd98f50d8a8f0baeea9caf067aefff4838ee69d94bac8922.png",
+        "description": "Elegant minimalist pattern of interconnected nodes and lines in deep navy blue on a stark white background, representing networking and channel partnerships, soft studio lighting"
+      },
+      {
+        "category": "property_listing_1",
+        "url": "https://images.unsplash.com/photo-1706808849827-7366c098b317?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc3NTU1MTczN3ww&ixlib=rb-4.1.0&q=85",
+        "description": "modern house with a pool"
+      },
+      {
+        "category": "property_listing_2",
+        "url": "https://images.unsplash.com/photo-1706855203772-c249b75fe016?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc3NTU1MTczN3ww&ixlib=rb-4.1.0&q=85",
+        "description": "rendering of a modern house"
+      },
+      {
+        "category": "office_interior",
+        "url": "https://images.unsplash.com/photo-1641998148499-cb6b55a3c0d3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBvZmZpY2UlMjBpbnRlcmlvciUyMHJlYWwlMjBlc3RhdGV8ZW58MHx8fHwxNzc1NTUxNzM3fDA&ixlib=rb-4.1.0&q=85",
+        "description": "modern office interior"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Execute 'yarn add @phosphor-icons/react' to use Phosphor icons.",
+    "Use raw HTML/Tailwind for marketing/hero sections, creating asymmetrical bento grids.",
+    "Use Shadcn/UI heavily for the dashboard (cards, tables, dialogs, dropdowns, calendars).",
+    "Replace generic Shadcn radiuses (default 0.5rem) with crisp 'rounded-none' or 'rounded-sm' for a technical Swiss look.",
+    "All interactive elements MUST include data-testid (e.g., data-testid='login-button').",
+    "Never use generic fonts like Inter for headings. Implement 'Cabinet Grotesk' for Headings and 'Manrope' for body.",
+    "Apply Grid Borders to data-heavy dashboard sections (border-r border-b).",
+    "Avoid fully transparent headers over images; use Crystal Glass (backdrop-blur-xl bg-white/70)."
+  ]
+}
