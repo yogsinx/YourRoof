@@ -394,8 +394,14 @@ async def reset_password(data: ResetPassword):
 # Property Endpoints
 @api_router.post("/properties")
 async def create_property(property_data: PropertyCreate, request: Request):
-    user = await get_current_admin(request)
+    user = await get_current_user(request)
+    # Allow admin and sellers to create properties
+    if user["role"] not in ["admin", "seller"]:
+        raise HTTPException(status_code=403, detail="Only admins and sellers can add properties")
+    
     prop_doc = property_data.model_dump()
+    prop_doc["seller_id"] = user["_id"]
+    prop_doc["seller_name"] = user["name"]
     prop_doc["created_at"] = datetime.now(timezone.utc)
     prop_doc["updated_at"] = datetime.now(timezone.utc)
     result = await db.properties.insert_one(prop_doc)
@@ -657,6 +663,147 @@ async def get_users(request: Request, role: Optional[str] = None):
     query = {"role": role} if role else {}
     users = await db.users.find(query, {"password_hash": 0, "_id": 0}).to_list(100)
     return users
+
+# Recent Views Endpoints
+@api_router.post("/properties/{property_id}/view")
+async def track_property_view(property_id: str, request: Request):
+    user = await get_current_user(request)
+    await db.recent_views.insert_one({
+        "user_id": user["_id"],
+        "property_id": property_id,
+        "viewed_at": datetime.now(timezone.utc)
+    })
+    return {"message": "View tracked"}
+
+@api_router.get("/recent-views")
+async def get_recent_views(request: Request, limit: int = 10):
+    user = await get_current_user(request)
+    views = await db.recent_views.find(
+        {"user_id": user["_id"]}
+    ).sort("viewed_at", -1).limit(limit).to_list(limit)
+    
+    property_ids = [ObjectId(v["property_id"]) for v in views]
+    properties = await db.properties.find({"_id": {"$in": property_ids}}).to_list(100)
+    
+    property_map = {str(p["_id"]): p for p in properties}
+    result = []
+    for view in views:
+        prop = property_map.get(view["property_id"])
+        if prop:
+            prop["_id"] = str(prop["_id"])
+            prop["viewed_at"] = view["viewed_at"]
+            result.append(prop)
+    return result
+
+# Contact Form Endpoint
+class ContactForm(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    message: str
+    subject: Optional[str] = "General Inquiry"
+
+@api_router.post("/contact")
+async def submit_contact_form(form_data: ContactForm):
+    contact_doc = form_data.model_dump()
+    contact_doc["created_at"] = datetime.now(timezone.utc)
+    contact_doc["status"] = "new"
+    result = await db.contacts.insert_one(contact_doc)
+    
+    # Also create a lead
+    lead_doc = {
+        "name": form_data.name,
+        "email": form_data.email,
+        "phone": form_data.phone,
+        "message": form_data.message,
+        "source": "contact_form",
+        "status": "new",
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.leads.insert_one(lead_doc)
+    
+    return {"message": "Contact form submitted successfully"}
+
+# Profile Update
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    address: Optional[str] = None
+
+@api_router.put("/profile")
+async def update_profile(profile_data: ProfileUpdate, request: Request):
+    user = await get_current_user(request)
+    update_data = {k: v for k, v in profile_data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.users.update_one(
+        {"_id": ObjectId(user["_id"])},
+        {"$set": update_data}
+    )
+    return {"message": "Profile updated successfully"}
+
+# Analytics for different roles
+@api_router.get("/analytics/buyer")
+async def get_buyer_analytics(request: Request):
+    user = await get_current_user(request)
+    
+    total_favorites = await db.favorites.count_documents({"user_id": user["_id"]})
+    total_appointments = await db.appointments.count_documents({"user_id": user["_id"]})
+    total_views = await db.recent_views.count_documents({"user_id": user["_id"]})
+    
+    # Recent activity
+    recent_appointments = await db.appointments.find(
+        {"user_id": user["_id"]}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    return {
+        "total_favorites": total_favorites,
+        "total_appointments": total_appointments,
+        "total_views": total_views,
+        "recent_appointments": recent_appointments
+    }
+
+@api_router.get("/analytics/seller")
+async def get_seller_analytics(request: Request):
+    user = await get_current_user(request)
+    
+    # Properties added by seller
+    my_properties = await db.properties.find({"seller_id": user["_id"]}).to_list(100)
+    total_properties = len(my_properties)
+    
+    # Count appointments for seller's properties
+    property_ids = [str(p["_id"]) for p in my_properties]
+    total_inquiries = await db.appointments.count_documents({"property_id": {"$in": property_ids}})
+    
+    # Featured properties count
+    featured_count = sum(1 for p in my_properties if p.get("featured", False))
+    
+    return {
+        "total_properties": total_properties,
+        "total_inquiries": total_inquiries,
+        "featured_properties": featured_count,
+        "properties": my_properties
+    }
+
+@api_router.get("/analytics/agent")
+async def get_agent_analytics(request: Request):
+    user = await get_current_user(request)
+    
+    # Commission data
+    commissions = await db.commissions.find({"agent_id": user["_id"]}).to_list(100)
+    total_earned = sum(c.get("amount", 0) for c in commissions if c.get("status") == "paid")
+    pending_commissions = sum(c.get("amount", 0) for c in commissions if c.get("status") == "pending")
+    
+    total_clients = await db.appointments.count_documents({"agent_id": user["_id"]})
+    
+    return {
+        "total_commissions": len(commissions),
+        "total_earned": total_earned,
+        "pending_commissions": pending_commissions,
+        "total_clients": total_clients,
+        "commissions": commissions
+    }
 
 app.include_router(api_router)
 
