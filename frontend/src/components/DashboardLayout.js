@@ -26,11 +26,6 @@ export default function DashboardLayout({ children }) {
             <Link to="/properties">
               <Button variant="ghost" className="rounded-sm">Browse Properties</Button>
             </Link>
-            {user?.role === 'admin' && (
-              <Link to="/admin">
-                <Button variant="outline" className="rounded-sm">Admin Panel</Button>
-              </Link>
-            )}
             <Button variant="outline" className="rounded-sm" onClick={handleLogout} data-testid="logout-button">
               <SignOut className="mr-2" size={20} />
               Logout
