@@ -8,7 +8,6 @@ import Register from './pages/Register';
 import Properties from './pages/Properties';
 import PropertyDetail from './pages/PropertyDetail';
 import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import RecentViewed from './pages/RecentViewed';
 import Appointments from './pages/Appointments';
@@ -98,14 +97,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Leads />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboard />
               </ProtectedRoute>
             }
           />

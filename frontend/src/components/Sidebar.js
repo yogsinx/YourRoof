@@ -35,7 +35,6 @@ export default function Sidebar() {
 
   const adminLinks = [
     { to: '/dashboard', icon: House, label: 'Dashboard' },
-    { to: '/admin', icon: Building, label: 'Admin Panel' },
     { to: '/analytics', icon: ChartBar, label: 'Analytics' },
     { to: '/profile', icon: User, label: 'Profile' }
   ];

@@ -2,12 +2,216 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ChartBar, Calendar, Heart, Eye, Building, TrendUp, Users, MapPin, Envelope } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Admin Management Tabs Component
+function AdminManagementTabs() {
+  const [leads, setLeads] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      const [leadsRes, appointmentsRes, usersRes] = await Promise.all([
+        axios.get(`${API_URL}/api/leads`, { withCredentials: true }),
+        axios.get(`${API_URL}/api/appointments`, { withCredentials: true }),
+        axios.get(`${API_URL}/api/users`, { withCredentials: true })
+      ]);
+
+      setLeads(leadsRes.data);
+      setAppointments(appointmentsRes.data);
+      setUsers(usersRes.data);
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      toast.error('Failed to load management data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateLeadStatus = async (leadId, status) => {
+    try {
+      await axios.put(
+        `${API_URL}/api/leads/${leadId}`,
+        { status },
+        { withCredentials: true }
+      );
+      toast.success('Lead status updated');
+      fetchAdminData();
+    } catch (error) {
+      toast.error('Failed to update lead status');
+    }
+  };
+
+  const updateAppointmentStatus = async (appointmentId, status) => {
+    try {
+      await axios.put(
+        `${API_URL}/api/appointments/${appointmentId}`,
+        { status },
+        { withCredentials: true }
+      );
+      toast.success('Appointment status updated');
+      fetchAdminData();
+    } catch (error) {
+      toast.error('Failed to update appointment status');
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading management data...</div>;
+  }
+
+  return (
+    <Tabs defaultValue="leads" className="space-y-6">
+      <TabsList className="grid w-full max-w-lg grid-cols-3 rounded-sm">
+        <TabsTrigger value="leads" className="rounded-sm" data-testid="leads-tab">
+          Leads ({leads.length})
+        </TabsTrigger>
+        <TabsTrigger value="appointments" className="rounded-sm" data-testid="appointments-tab">
+          Appointments ({appointments.length})
+        </TabsTrigger>
+        <TabsTrigger value="users" className="rounded-sm" data-testid="users-tab">
+          Users ({users.length})
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="leads" className="space-y-4">
+        {leads.length === 0 ? (
+          <Card className="rounded-sm border-border/40">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No leads yet
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {leads.map((lead) => (
+              <Card key={lead.id} className="rounded-sm border-border/40">
+                <CardContent className="py-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-semibold mb-1">{lead.name}</div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Email: {lead.email}</div>
+                        <div>Phone: {lead.phone}</div>
+                        <div>Message: {lead.message}</div>
+                        <div>Source: {lead.source}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={lead.status}
+                        onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
+                        className="px-3 py-1 rounded-sm text-sm border border-border/40"
+                        data-testid={`lead-status-${lead.id}`}
+                      >
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="converted">Converted</option>
+                        <option value="lost">Lost</option>
+                      </select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="appointments" className="space-y-4">
+        {appointments.length === 0 ? (
+          <Card className="rounded-sm border-border/40">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No appointments yet
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {appointments.map((appt) => (
+              <Card key={appt.id} className="rounded-sm border-border/40">
+                <CardContent className="py-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-semibold mb-1">{appt.user_name}</div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Email: {appt.user_email}</div>
+                        <div>Phone: {appt.user_phone}</div>
+                        <div>Date: {appt.date} at {appt.time}</div>
+                        {appt.message && <div>Message: {appt.message}</div>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={appt.status}
+                        onChange={(e) => updateAppointmentStatus(appt.id, e.target.value)}
+                        className="px-3 py-1 rounded-sm text-sm border border-border/40"
+                        data-testid={`appointment-status-${appt.id}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="users" className="space-y-4">
+        {users.length === 0 ? (
+          <Card className="rounded-sm border-border/40">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No users yet
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {users.map((user, index) => (
+              <Card key={index} className="rounded-sm border-border/40">
+                <CardContent className="py-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-semibold mb-1">{user.name}</div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Email: {user.email}</div>
+                        <div>Phone: {user.phone}</div>
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded-sm text-xs font-medium ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'agent' ? 'bg-blue-100 text-blue-800' :
+                      user.role === 'seller' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {user.role}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+}
 
 export default function DashboardNew() {
   const { user } = useAuth();
@@ -93,7 +297,7 @@ export default function DashboardNew() {
               Admin Dashboard
             </h1>
             <p className="text-muted-foreground">
-              Platform overview and key metrics
+              Platform overview and management
             </p>
           </div>
 
@@ -120,63 +324,8 @@ export default function DashboardNew() {
             })}
           </div>
 
-          {/* Admin Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="rounded-sm border-border/40">
-              <CardHeader>
-                <CardTitle className="text-lg">Manage Platform</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Link to="/admin">
-                  <Button variant="outline" className="w-full rounded-sm justify-start">
-                    <Building className="mr-2" size={18} />
-                    Full Admin Panel
-                  </Button>
-                </Link>
-                <Link to="/properties">
-                  <Button variant="outline" className="w-full rounded-sm justify-start">
-                    <MapPin className="mr-2" size={18} />
-                    View All Properties
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-sm border-border/40">
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div>• {adminStats?.new_leads || 0} new leads today</div>
-                  <div>• {adminStats?.pending_appointments || 0} pending appointments</div>
-                  <div>• {adminStats?.total_users || 0} total registered users</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-sm border-border/40">
-              <CardHeader>
-                <CardTitle className="text-lg">Platform Health</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Properties</span>
-                    <span className="text-sm font-semibold">{adminStats?.total_properties || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Active Leads</span>
-                    <span className="text-sm font-semibold">{adminStats?.new_leads || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Users</span>
-                    <span className="text-sm font-semibold">{adminStats?.total_users || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Management Tabs */}
+          <AdminManagementTabs />
         </div>
       </DashboardLayout>
     );
